@@ -1,41 +1,24 @@
+import { Dday } from './Dday'
+
 export function WeddingInfo() {
   return (
-    <section className="max-w-md mx-auto px-6 py-8">
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-sky-100">
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <span className="text-2xl">🛫</span>
-          <h3 className="text-2xl font-serif text-center bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
-            Flight Information
-          </h3>
-          <span className="text-2xl">🛬</span>
-        </div>
-        
-        <div className="space-y-6 text-center">
-          <div className="bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-4">
-            <p className="text-sky-600 text-sm mb-2 font-medium">📅 Departure Date</p>
-            <p className="text-2xl font-bold bg-gradient-to-r from-sky-700 to-blue-700 bg-clip-text text-transparent">
-              2026년 12월 12일
-            </p>
-            <p className="text-gray-600 mt-1">토요일</p>
-          </div>
-          
-          <div className="bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl p-4">
-            <p className="text-blue-600 text-sm mb-2 font-medium">🕐 Boarding Time</p>
-            <p className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-sky-700 bg-clip-text text-transparent">
-              오후 16시 10분
-            </p>
-          </div>
-          
-          <div className="bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl p-4">
-            <p className="text-sky-600 text-sm mb-2 font-medium">📍 Destination</p>
-            <p className="text-xl font-bold text-gray-800 mb-1">
-              광명 라포에트
-            </p>
-            <p className="text-gray-600">
-              광명역사 동편 지하 1층
-            </p>
-          </div>
-        </div>
+    <section className="max-w-md mx-auto px-6 py-16">
+      <div className="text-center mb-12">
+        <p className="text-xs tracking-[0.35em] text-slate-400 mb-4">WEDDING DAY</p>
+        <p className="font-serif text-4xl text-slate-800 mb-2">2026. 12. 12.</p>
+        <p className="text-sm text-slate-500">토요일 오후 4시 10분</p>
+      </div>
+
+      <div className="mb-12">
+        <Dday />
+      </div>
+
+      <div className="w-8 h-px bg-slate-300 mx-auto mb-10" />
+
+      <div className="text-center">
+        <p className="text-xs tracking-[0.35em] text-slate-400 mb-4">LOCATION</p>
+        <p className="font-serif text-xl text-slate-800 mb-1">광명 라포에트</p>
+        <p className="text-sm text-slate-500">광명역 동편 지하 1층</p>
       </div>
     </section>
   )

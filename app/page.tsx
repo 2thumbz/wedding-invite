@@ -9,7 +9,7 @@ import { AnimatedSection } from '@/components/AnimatedSection'
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-sky-100 via-blue-50 to-white relative overflow-hidden">
+    <main className="min-h-screen bg-white relative overflow-hidden">
       {/* 비행기 애니메이션 */}
       <FlightAnimation />
       
