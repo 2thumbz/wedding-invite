@@ -5,11 +5,26 @@ import Image from 'next/image'
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient'
 
 const BUCKET = 'celebration-photos'
+const UPLOADER_TOKEN_KEY = 'photo-uploader-token'
+
+function getUploaderToken() {
+  if (typeof window === 'undefined') return ''
+  let token = localStorage.getItem(UPLOADER_TOKEN_KEY)
+  if (!token) {
+    token =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+    localStorage.setItem(UPLOADER_TOKEN_KEY, token)
+  }
+  return token
+}
 
 type PhotoEntry = {
   id: number
   file_path: string
   uploader_name: string | null
+  uploader_token: string | null
   created_at: string
   url: string
 }
@@ -18,9 +33,15 @@ export function PhotoUpload() {
   const [photos, setPhotos] = useState<PhotoEntry[]>([])
   const [uploaderName, setUploaderName] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [selected, setSelected] = useState<string | null>(null)
+  const [selected, setSelected] = useState<PhotoEntry | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [myToken, setMyToken] = useState('')
+
+  useEffect(() => {
+    setMyToken(getUploaderToken())
+  }, [])
 
   const fetchPhotos = async () => {
     const { data, error } = await supabase
@@ -63,6 +84,7 @@ export function PhotoUpload() {
       const { error: insertError } = await supabase.from('celebration_photos').insert({
         file_path: filePath,
         uploader_name: uploaderName.trim() || null,
+        uploader_token: myToken || getUploaderToken(),
       })
 
       if (insertError) throw insertError
@@ -75,6 +97,32 @@ export function PhotoUpload() {
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
+
+  const handleDelete = async (photo: PhotoEntry) => {
+    if (deletingId) return
+    setDeletingId(photo.id)
+    setError(null)
+
+    try {
+      await supabase.storage.from(BUCKET).remove([photo.file_path])
+
+      const { error: deleteError } = await supabase
+        .from('celebration_photos')
+        .delete()
+        .eq('id', photo.id)
+        .eq('uploader_token', photo.uploader_token ?? '')
+
+      if (deleteError) throw deleteError
+
+      setSelected(null)
+      await fetchPhotos()
+    } catch (err) {
+      setError('삭제에 실패했습니다. 잠시 후 다시 시도해주세요.')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
 
   return (
     <section className="max-w-md mx-auto px-6 py-16">
@@ -130,7 +178,7 @@ export function PhotoUpload() {
           {photos.map((photo) => (
             <button
               key={photo.id}
-              onClick={() => setSelected(photo.url)}
+              onClick={() => setSelected(photo)}
               className="relative aspect-square rounded-lg overflow-hidden border border-slate-100"
             >
               <Image src={photo.url} alt="" fill className="object-cover" sizes="150px" />
@@ -156,9 +204,21 @@ export function PhotoUpload() {
           >
             ✕
           </button>
+          {myToken && selected.uploader_token === myToken && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDelete(selected)
+              }}
+              disabled={deletingId === selected.id}
+              className="absolute top-4 left-4 text-xs tracking-wide text-white bg-red-500/90 rounded-full px-4 py-2 hover:bg-red-600 transition-colors shadow-lg z-10 disabled:opacity-50"
+            >
+              {deletingId === selected.id ? '삭제 중...' : '내 사진 삭제'}
+            </button>
+          )}
           <div className="relative w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
             <div className="relative w-full h-full max-w-4xl max-h-[90vh]">
-              <Image src={selected} alt="" fill className="object-contain" sizes="100vw" />
+              <Image src={selected.url} alt="" fill className="object-contain" sizes="100vw" />
             </div>
           </div>
         </div>
@@ -166,3 +226,4 @@ export function PhotoUpload() {
     </section>
   )
 }
+

@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 const DISMISS_KEY = 'rsvp-modal-dismissed-date'
 
 export function RsvpModal() {
+  const router = useRouter()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -26,7 +28,7 @@ export function RsvpModal() {
 
   const goToRsvp = () => {
     setVisible(false)
-    document.getElementById('rsvp')?.scrollIntoView({ behavior: 'smooth' })
+    router.push('/rsvp')
   }
 
   if (!visible) return null

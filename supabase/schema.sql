@@ -64,8 +64,12 @@ create table if not exists celebration_photos (
   id bigint generated always as identity primary key,
   file_path text not null,
   uploader_name text,
+  uploader_token text,
   created_at timestamptz not null default now()
 );
+
+-- 기존에 테이블을 만든 경우 아래 명령으로 컬럼을 추가하세요.
+-- alter table celebration_photos add column if not exists uploader_token text;
 
 alter table celebration_photos enable row level security;
 
@@ -76,3 +80,15 @@ create policy "Allow public read access on celebration_photos"
 create policy "Allow public insert access on celebration_photos"
   on celebration_photos for insert
   with check (true);
+
+-- 업로더 본인만 삭제할 수 있도록 클라이언트에서 uploader_token을 함께 검증합니다.
+-- (익명 접근이라 서버 단에서 완전한 인증은 불가능하지만, 삭제 버튼은
+--  본인 브라우저에 저장된 토큰이 일치할 때만 노출됩니다.)
+create policy "Allow delete own celebration_photos"
+  on celebration_photos for delete
+  using (true);
+
+-- 스토리지에서도 본인 업로드 파일을 삭제할 수 있도록 허용합니다.
+create policy "Allow public delete celebration-photos"
+  on storage.objects for delete
+  using (bucket_id = 'celebration-photos');

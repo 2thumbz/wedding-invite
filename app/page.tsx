@@ -3,9 +3,10 @@ import { Greeting } from '@/components/Greeting'
 import { WeddingInfo } from '@/components/WeddingInfo'
 import { Gallery } from '@/components/Gallery'
 import { Location } from '@/components/Location'
-import { Rsvp } from '@/components/Rsvp'
 import { RsvpModal } from '@/components/RsvpModal'
+import { RsvpTeaser } from '@/components/RsvpTeaser'
 import { Contact } from '@/components/Contact'
+import { Account } from '@/components/Account'
 import { PhotoUpload } from '@/components/PhotoUpload'
 import { Guestbook } from '@/components/Guestbook'
 import { FlightAnimation } from '@/components/FlightAnimation'
@@ -41,21 +42,23 @@ export default function Home() {
         </AnimatedSection>
 
         <AnimatedSection delay={0.55}>
-          <div id="rsvp">
-            <Rsvp />
-          </div>
-        </AnimatedSection>
-        
-        <AnimatedSection delay={0.6}>
           <Contact />
         </AnimatedSection>
 
+        <AnimatedSection delay={0.6}>
+          <Guestbook />
+        </AnimatedSection>
+
         <AnimatedSection delay={0.62}>
-          <PhotoUpload />
+          <Account />
         </AnimatedSection>
 
         <AnimatedSection delay={0.65}>
-          <Guestbook />
+          <RsvpTeaser />
+        </AnimatedSection>
+
+        <AnimatedSection delay={0.68}>
+          <PhotoUpload />
         </AnimatedSection>
         
         <footer className="text-center py-8 text-gray-500 text-sm">
