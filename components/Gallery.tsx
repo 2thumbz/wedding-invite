@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import Image from 'next/image'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import type { WheelEvent, PointerEvent as ReactPointerEvent } from 'react'
+import type { PointerEvent as ReactPointerEvent } from 'react'
 
 const FILES = [
   'arkki_0049.jpg', 'arkki_0054.jpg', 'arkki_0081.jpg', 'arkki_0224.jpg',
@@ -41,9 +41,8 @@ function GalleryCard({
     offset: ['start end', 'end start'],
   })
 
-  const rotateY = useTransform(scrollXProgress, [0, 0.5, 1], [35, 0, -35])
-  const scale = useTransform(scrollXProgress, [0, 0.5, 1], [0.82, 1, 0.82])
-  const opacity = useTransform(scrollXProgress, [0, 0.15, 0.5, 0.85, 1], [0.4, 1, 1, 1, 0.4])
+  const rotateY = useTransform(scrollXProgress, [0, 0.5, 1], [20, 0, -20])
+  const scale = useTransform(scrollXProgress, [0, 0.5, 1], [0.92, 1, 0.92])
 
   const handlePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     pointerStart.current = { x: e.clientX, y: e.clientY }
@@ -64,7 +63,7 @@ function GalleryCard({
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       className="relative shrink-0 w-64 sm:w-72 aspect-[3/4] rounded-2xl overflow-hidden shadow-lg border border-sky-100 snap-center will-change-transform cursor-pointer"
-      style={{ rotateY, scale, opacity, transformStyle: 'preserve-3d' as any }}
+      style={{ rotateY, scale, transformStyle: 'preserve-3d' as any }}
     >
       <Image
         src={src}
@@ -82,17 +81,7 @@ export function Gallery() {
 
   const containerRef = useRef<HTMLDivElement | null>(null)
 
-  // 마우스 휠(세로)을 가로 스크롤로 변환 - 데스크탑에서 좌우 스크롤 지원
-  const handleWheel = (e: WheelEvent<HTMLDivElement>) => {
-    const el = containerRef.current
-    if (!el) return
-    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-      el.scrollLeft += e.deltaY
-      e.preventDefault()
-    }
-  }
-
-  // 마우스 드래그로 좌우 스크롤 - 데스크탑 UX 보완
+  // 마우스 드래그로 좌우 스크롤 - 데스크탑 UX 보완 (세로 스크롤은 그대로 페이지 스크롤에 사용)
   const dragState = useRef({ isDown: false, startX: 0, startScroll: 0 })
 
   const handlePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -126,7 +115,6 @@ export function Gallery() {
         <div style={{ perspective: 1200 }}>
           <div
             ref={containerRef}
-            onWheel={handleWheel}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
