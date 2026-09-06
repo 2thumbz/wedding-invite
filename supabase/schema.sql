@@ -40,3 +40,39 @@ create policy "Allow public insert access on rsvp"
 
 -- 신랑/신부만 조회하도록 하려면 Supabase 대시보드에서 별도 인증을 붙이거나
 -- Table Editor에서 직접 확인하는 것을 권장합니다.
+
+-- 3. 축하 사진 업로드 (Storage)
+-- Supabase 대시보드 > Storage 에서 'celebration-photos' 라는 이름의
+-- Public 버킷을 먼저 생성한 뒤 아래 정책을 적용하세요.
+
+insert into storage.buckets (id, name, public)
+values ('celebration-photos', 'celebration-photos', true)
+on conflict (id) do nothing;
+
+-- 누구나 업로드 가능
+create policy "Allow public upload to celebration-photos"
+  on storage.objects for insert
+  with check (bucket_id = 'celebration-photos');
+
+-- 누구나 조회 가능 (버킷이 public이면 사실 자동으로 가능하지만 명시적으로 추가)
+create policy "Allow public read celebration-photos"
+  on storage.objects for select
+  using (bucket_id = 'celebration-photos');
+
+-- 사진 메타데이터 테이블 (업로더 이름 등)
+create table if not exists celebration_photos (
+  id bigint generated always as identity primary key,
+  file_path text not null,
+  uploader_name text,
+  created_at timestamptz not null default now()
+);
+
+alter table celebration_photos enable row level security;
+
+create policy "Allow public read access on celebration_photos"
+  on celebration_photos for select
+  using (true);
+
+create policy "Allow public insert access on celebration_photos"
+  on celebration_photos for insert
+  with check (true);

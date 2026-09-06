@@ -5,6 +5,7 @@ import { Gallery } from '@/components/Gallery'
 import { Location } from '@/components/Location'
 import { Rsvp } from '@/components/Rsvp'
 import { Contact } from '@/components/Contact'
+import { PhotoUpload } from '@/components/PhotoUpload'
 import { Guestbook } from '@/components/Guestbook'
 import { FlightAnimation } from '@/components/FlightAnimation'
 import { AnimatedSection } from '@/components/AnimatedSection'
@@ -41,6 +42,10 @@ export default function Home() {
         
         <AnimatedSection delay={0.6}>
           <Contact />
+        </AnimatedSection>
+
+        <AnimatedSection delay={0.62}>
+          <PhotoUpload />
         </AnimatedSection>
 
         <AnimatedSection delay={0.65}>
