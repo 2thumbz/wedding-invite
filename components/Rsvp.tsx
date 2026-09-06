@@ -58,6 +58,13 @@ export function Rsvp() {
         <p className="text-sm text-slate-500">
           참석 의사를 미리 전달해주시면<br />준비에 큰 도움이 됩니다
         </p>
+
+        <div className="mt-6 mx-auto max-w-xs border border-slate-200 rounded-2xl px-6 py-5">
+          <p className="font-serif text-base text-slate-800 tracking-wide">2026. 12. 12. 토요일</p>
+          <p className="text-sm text-slate-500 mt-1">오후 4시 10분</p>
+          <div className="w-6 h-px bg-slate-300 mx-auto my-3" />
+          <p className="text-sm text-slate-500">광명 라포에트</p>
+        </div>
       </div>
 
       {!isSupabaseConfigured && (

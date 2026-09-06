@@ -4,6 +4,7 @@ import { WeddingInfo } from '@/components/WeddingInfo'
 import { Gallery } from '@/components/Gallery'
 import { Location } from '@/components/Location'
 import { Rsvp } from '@/components/Rsvp'
+import { RsvpModal } from '@/components/RsvpModal'
 import { Contact } from '@/components/Contact'
 import { PhotoUpload } from '@/components/PhotoUpload'
 import { Guestbook } from '@/components/Guestbook'
@@ -13,6 +14,9 @@ import { AnimatedSection } from '@/components/AnimatedSection'
 export default function Home() {
   return (
     <main className="min-h-screen bg-white relative overflow-hidden">
+      {/* 참석의사 전달 랜딩 모달 */}
+      <RsvpModal />
+
       {/* 비행기 애니메이션 */}
       <FlightAnimation />
       
@@ -37,7 +41,9 @@ export default function Home() {
         </AnimatedSection>
 
         <AnimatedSection delay={0.55}>
-          <Rsvp />
+          <div id="rsvp">
+            <Rsvp />
+          </div>
         </AnimatedSection>
         
         <AnimatedSection delay={0.6}>
