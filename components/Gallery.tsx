@@ -9,16 +9,16 @@ const FILES = [
   'arkki_0049.jpg', 'arkki_0054.jpg', 'arkki_0081.jpg', 'arkki_0224.jpg',
   'arkki_0267.jpg', 'arkki_0364.jpg', 'arkki_0495_(2).jpg', 'arkki_0587.jpg',
   'arkki_0605.jpg', 'arkki_0806_size_cut_(2).jpg', 'arkki_0832.jpg', 'arkki_0841.jpg',
-  'arkki_0870.jpg', 'arkki_0875.jpg', 'arkki_0957.jpg', 'arkki_1447.jpg',
+  'arkki_0875.jpg', 'arkki_0957.jpg', 'arkki_1447.jpg',
   'arkki_1636.jpg', 'arkki_1642.jpg', 'arkki_1648.jpg', 'arkki_1730.jpg',
   'arkki_2289.jpg', 'arkki_2365.jpg', 'arkki_2391.jpg', 'arkki_2432.jpg',
   'arkki_2461.jpg', 'arkki_2461_(2).jpg', 'arkki_2480.jpg', 'arkki_2588.jpg',
   'arkki_2800.jpg', 'arkki_2834.jpg', 'arkki_2938.jpg', 'arkki_2996.jpg',
   'arkki_3166.jpg', 'arkki_3183.jpg', 'arkki_3296.jpg', 'arkki_3409.jpg',
   'arkki_3513.jpg', 'arkki_3782.jpg', 'arkki_3964_(3).jpg', 'arkki_4030.jpg',
-  'arkki_4229.jpg', 'arkki_4276.jpg', 'arkki_4564.jpg', 'arkki_4568.jpg',
+  'arkki_4229.jpg', 'arkki_4276.jpg', 'arkki_4458.jpg', 'arkki_4564.jpg', 'arkki_4568.jpg',
   'arkki_4737.jpg', 'arkki_4780.jpg', 'arkki_5010.jpg', 'arkki_5015.jpg',
-  'arkki_5079.jpg', 'arkki_5204.jpg',
+  'arkki_5079.jpg', 'arkki_5204.jpg', 'arkki_5359.jpg', 'arkki_5488.jpg',
 ]
 
 function GalleryCard({
