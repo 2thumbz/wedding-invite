@@ -5,16 +5,8 @@ import { useState } from 'react'
 
 const transportInfo = [
   {
-    title: '지하철',
-    lines: ['2호선 강남역 3번 출구 도보 5분'],
-  },
-  {
-    title: '버스',
-    lines: ['간선 : 146, 341, 360', '지선 : 4412, 4419'],
-  },
-  {
     title: '주차',
-    lines: ['건물 지하 주차장 이용 가능 (3시간 무료)'],
+    lines: ['1,2 주차장 외 B,C,D 주차장 전체 이용 가능 (2시간 무료)'],
   },
 ]
 
