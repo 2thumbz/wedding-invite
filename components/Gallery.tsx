@@ -32,6 +32,9 @@ function GalleryCard({
 }) {
   const cardRef = useRef<HTMLDivElement | null>(null)
   const pointerStart = useRef({ x: 0, y: 0 })
+  // 이미지의 실제 가로/세로 비율을 로드 시점에 감지해서 카드 크기를 유동적으로 조정한다
+  // (세로 사진: 기본 3:4 카드 / 가로 사진: 더 넓은 4:3 카드)
+  const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait')
 
   // 카드가 스크롤 컨테이너(뷰포트) 안에서 좌 -> 우로 지나가는 진행도(0~1)를 추적
   const { scrollXProgress } = useScroll({
@@ -57,12 +60,18 @@ function GalleryCard({
     }
   }
 
+  const isLandscape = orientation === 'landscape'
+
   return (
     <motion.div
       ref={cardRef}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
-      className="relative shrink-0 w-64 sm:w-72 aspect-[3/4] rounded-2xl overflow-hidden shadow-lg border border-sky-100 snap-center will-change-transform cursor-pointer"
+      className={`relative shrink-0 rounded-2xl overflow-hidden shadow-lg border border-sky-100 snap-center will-change-transform cursor-pointer transition-[width] duration-300 ${
+        isLandscape
+          ? 'w-80 sm:w-[26rem] aspect-[4/3]'
+          : 'w-64 sm:w-72 aspect-[3/4]'
+      }`}
       style={{ rotateY, scale, transformStyle: 'preserve-3d' as any }}
     >
       <Image
@@ -70,11 +79,18 @@ function GalleryCard({
         alt=""
         fill
         className="object-cover"
-        sizes="(max-width: 768px) 70vw, 300px"
+        sizes="(max-width: 768px) 80vw, 420px"
+        onLoad={(e) => {
+          const img = e.currentTarget
+          if (img.naturalWidth >= img.naturalHeight) {
+            setOrientation('landscape')
+          }
+        }}
       />
     </motion.div>
   )
 }
+
 
 export function Gallery() {
   const images = FILES.map((f) => ({ src: `/assets/image/pic/${f}` }))

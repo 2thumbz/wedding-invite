@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { setRsvpModalOpen } from '@/lib/rsvpModalStore'
 
 const DISMISS_KEY = 'rsvp-modal-dismissed-date'
 
@@ -18,6 +19,12 @@ export function RsvpModal() {
       return () => clearTimeout(timer)
     }
   }, [])
+
+  // 팝업 노출 상태를 전역 스토어에 반영 -> Header 등에서 애니메이션 일시정지에 사용
+  useEffect(() => {
+    setRsvpModalOpen(visible)
+    return () => setRsvpModalOpen(false)
+  }, [visible])
 
   const close = () => setVisible(false)
 
