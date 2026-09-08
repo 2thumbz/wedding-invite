@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
+import { useRsvpModalOpen } from '@/lib/rsvpModalStore'
 
 // 8개 행으로 구성된 출발 안내판 데이터
 // 각 행은 스크램블 되는 후보 문자열들과, 최종적으로 멈추는 값을 가진다
@@ -61,6 +62,7 @@ function FlipRow({
   startDelay = 0,
   tickMs = 180,
   lockDurationMs = 2400,
+  paused = false,
   onDone,
 }: {
   frames: string[]
@@ -69,6 +71,8 @@ function FlipRow({
   tickMs?: number
   /** 이 행이 스크램블을 멈추고 완전히 고정될 때까지 걸리는 총 시간(ms). 모든 행이 이 값을 동일하게 받으면 글자 수와 무관하게 동시에 완료된다. */
   lockDurationMs?: number
+  /** true인 동안에는 스크램블/고정 진행을 멈추고, 다시 false가 되면 멈추던 지점부터 이어서 진행한다. */
+  paused?: boolean
   onDone?: () => void
 }) {
   const width = Math.max(final.length, ...frames.map((f) => f.length))
@@ -81,13 +85,21 @@ function FlipRow({
   const [locked, setLocked] = useState(0)
   const doneRef = useRef(false)
   const onDoneRef = useRef(onDone)
+  const pausedRef = useRef(paused)
 
   useEffect(() => {
     onDoneRef.current = onDone
   }, [onDone])
 
   useEffect(() => {
-    const tickTimer = setInterval(() => setTick((t) => t + 1), tickMs)
+    pausedRef.current = paused
+  }, [paused])
+
+  useEffect(() => {
+    const tickTimer = setInterval(() => {
+      if (pausedRef.current) return
+      setTick((t) => t + 1)
+    }, tickMs)
     return () => clearInterval(tickTimer)
   }, [tickMs])
 
@@ -96,6 +108,7 @@ function FlipRow({
 
     const startTimer = setTimeout(() => {
       lockTimer = setInterval(() => {
+        if (pausedRef.current) return
         setLocked((prev) => {
           const next = prev + 1
           if (next >= width) {
@@ -133,6 +146,7 @@ const ROW_LOCK_DURATION = 2600
 export function Header() {
   const [showPhoto, setShowPhoto] = useState(false)
   const doneCountRef = useRef(0)
+  const isRsvpModalOpen = useRsvpModalOpen()
 
   const handleRowDone = () => {
     doneCountRef.current += 1
@@ -165,6 +179,7 @@ export function Header() {
                     final={row.final}
                     startDelay={ROW_START_DELAY}
                     lockDurationMs={ROW_LOCK_DURATION}
+                    paused={isRsvpModalOpen}
                     onDone={handleRowDone}
                   />
                 ))}
