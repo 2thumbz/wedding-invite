@@ -77,10 +77,8 @@ export function Location() {
         </p>
       </div>
 
-      <div className="w-8 h-px bg-slate-300 mx-auto mb-10" />
-
       <div className="text-center mb-10">
-        <p className="font-serif text-xl text-slate-800 mb-1">주차 안내</p>
+        <p className="font-serif text-xl text-slate-800 mb-1">주차장 안내</p>
         <p className="text-sm text-slate-500 mb-1">1,2 주차장 외 B,C,D 주차장 전체 이용 가능</p>
         <p className="text-xs text-slate-400 mb-6"> (2시간 무료)</p>
       </div>
