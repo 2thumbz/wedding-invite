@@ -32,7 +32,7 @@ function FlipChar({ char }: { char: string }) {
   const display = char === ' ' ? '\u00A0' : char
   return (
     <span
-      className="relative inline-flex items-center justify-center w-[8vw] h-[10.5vw] max-w-[48px] max-h-[62px] sm:w-11 sm:h-14 bg-slate-950 text-sky-100 rounded-[5px] font-mono text-base sm:text-2xl overflow-hidden shadow-[inset_0_1px_2px_rgba(255,255,255,0.08)]"
+      className="relative inline-flex items-center justify-center w-[8.5vw] h-[11vw] max-w-[56px] max-h-[72px] sm:w-14 sm:h-[70px] bg-slate-950 text-sky-100 rounded-[6px] font-mono text-lg sm:text-3xl overflow-hidden shadow-[inset_0_1px_2px_rgba(255,255,255,0.08)]"
       style={{ perspective: 240 }}
     >
       <span className="pointer-events-none absolute inset-x-0 top-1/2 h-px bg-black/50 z-10" />
@@ -57,19 +57,22 @@ function FlipRow({
   final,
   startDelay = 0,
   tickMs = 180,
-  lockIntervalMs = 320,
+  lockDurationMs = 2400,
   onDone,
 }: {
   frames: string[]
   final: string
   startDelay?: number
   tickMs?: number
-  lockIntervalMs?: number
+  /** 이 행이 스크램블을 멈추고 완전히 고정될 때까지 걸리는 총 시간(ms). 모든 행이 이 값을 동일하게 받으면 글자 수와 무관하게 동시에 완료된다. */
+  lockDurationMs?: number
   onDone?: () => void
 }) {
   const width = Math.max(final.length, ...frames.map((f) => f.length))
   const paddedFrames = frames.map((f) => padCenter(f, width))
   const paddedFinal = padCenter(final, width)
+  // 총 소요 시간을 칸 수로 나눠서, 칸이 많은 행도 적은 행과 동시에 끝나도록 간격을 좁힌다
+  const lockIntervalMs = Math.max(40, Math.round(lockDurationMs / width))
 
   const [tick, setTick] = useState(0)
   const [locked, setLocked] = useState(0)
@@ -121,49 +124,50 @@ function FlipRow({
   )
 }
 
-export function Header() {
-  const [boardDone, setBoardDone] = useState(false)
-  const [showPhoto, setShowPhoto] = useState(false)
+const ROW_START_DELAY = 900
+const ROW_LOCK_DURATION = 2600
 
-  useEffect(() => {
-    if (boardDone) {
-      const t = setTimeout(() => setShowPhoto(true), 1400)
-      return () => clearTimeout(t)
+export function Header() {
+  const [showPhoto, setShowPhoto] = useState(false)
+  const doneCountRef = useRef(0)
+
+  const handleRowDone = () => {
+    doneCountRef.current += 1
+    if (doneCountRef.current >= BOARD_ROWS.length) {
+      setTimeout(() => setShowPhoto(true), 1400)
     }
-  }, [boardDone])
+  }
 
   return (
-    <header className="relative py-6 sm:py-10 px-0 min-h-screen w-full flex items-center justify-center overflow-hidden">
-      <div className="w-full max-w-none sm:max-w-3xl mx-auto px-3 sm:px-6">
+    <header className="relative py-0 px-0 h-screen w-full flex items-center justify-center overflow-hidden bg-slate-900">
+      <div className="w-full h-full max-w-5xl mx-auto px-0 sm:px-4">
         <AnimatePresence mode="wait">
           {!showPhoto ? (
             <motion.div
               key="board"
               exit={{ opacity: 0, scale: 0.9, rotateX: -25 }}
               transition={{ duration: 0.8, ease: 'easeIn' }}
-              className="bg-slate-900 rounded-2xl sm:rounded-3xl px-4 sm:px-10 py-12 sm:py-16 shadow-2xl w-full min-h-[80vh] flex flex-col justify-center"
+              className="bg-slate-900 sm:rounded-3xl px-4 sm:px-10 py-8 shadow-2xl w-full h-full flex flex-col justify-center"
               style={{ perspective: 900 }}
             >
-              <p className="text-center text-xs sm:text-sm tracking-[0.4em] text-sky-300/70 mb-7">
+              <p className="text-center text-xs sm:text-base tracking-[0.4em] text-sky-300/70 mb-8">
                 ✈ BOARDING PASS
               </p>
 
-              <div className="flex flex-col gap-2 sm:gap-3">
+              <div className="flex flex-col gap-3 sm:gap-4">
                 {BOARD_ROWS.map((row, i) => (
                   <FlipRow
                     key={i}
                     frames={row.frames}
                     final={row.final}
-                    startDelay={1200 + i * 1100}
-                    lockIntervalMs={280}
-                    onDone={
-                      i === BOARD_ROWS.length - 1 ? () => setBoardDone(true) : undefined
-                    }
+                    startDelay={ROW_START_DELAY}
+                    lockDurationMs={ROW_LOCK_DURATION}
+                    onDone={handleRowDone}
                   />
                 ))}
               </div>
 
-              <p className="text-center text-xs sm:text-sm tracking-[0.4em] text-sky-300/50 mt-8">
+              <p className="text-center text-xs sm:text-base tracking-[0.4em] text-sky-300/50 mt-8">
                 WEDDING FLIGHT
               </p>
             </motion.div>
@@ -174,7 +178,7 @@ export function Header() {
               initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.9, ease: 'easeOut' }}
-              className="relative w-full h-[90vh] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl"
+              className="relative w-full h-full sm:rounded-3xl overflow-hidden shadow-2xl"
             >
               <Image
                 src={HERO_IMAGE}
