@@ -9,7 +9,6 @@ import { Contact } from '@/components/Contact'
 import { Account } from '@/components/Account'
 import { PhotoUpload } from '@/components/PhotoUpload'
 import { Guestbook } from '@/components/Guestbook'
-import { FlightAnimation } from '@/components/FlightAnimation'
 import { AnimatedSection } from '@/components/AnimatedSection'
 
 export default function Home() {
@@ -18,11 +17,8 @@ export default function Home() {
       {/* 참석의사 전달 랜딩 모달 */}
       <RsvpModal />
 
-      {/* 비행기 애니메이션 */}
-      <FlightAnimation />
-      
-      {/* 콘텐츠 - 좌측 5vw 공간 확보 */}
-      <div className="relative z-10 ml-[5vw] pl-[20px]">
+      {/* 콘텐츠 */}
+      <div className="relative z-10">
         <Header />
         
         <AnimatedSection delay={0.2}>
