@@ -4,14 +4,14 @@ const contacts = {
   groom: {
     name: '임태훈',
     phone: '010-2055-1068',
-    father: { name: '임창수', phone: '' },
+    father: { name: '임창수', phone: '010-7739-3454' },
     mother: { name: '이동연', phone: '010-3333-4444' },
   },
   bride: {
     name: '김지영',
     phone: '010-2343-7523',
     father: { name: '故 김재홍', phone: '' },
-    mother: { name: '이재숙', phone: '010-7777-8888' },
+    mother: { name: '이재숙', phone: '010-6603-6385' },
   },
 }
 

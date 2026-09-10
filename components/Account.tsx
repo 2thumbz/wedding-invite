@@ -3,8 +3,16 @@
 import { useState } from 'react'
 
 const accounts = {
-  groom: [{ label: '태훈', bank: '신한은행', number: '110-000-000000' }],
-  bride: [{ label: '지영', bank: '우리은행', number: '110-000-000000' }],
+  groom: [
+    { label: '임창수', bank: '은행명', number: '000-000-000000' },
+    { label: '이동연', bank: '농협', number: '211813-52-049921' },
+    { label: '임태훈', bank: '국민은행', number: '453202-04-145383' },
+  ],
+  bride: [
+    
+    { label: '이재숙', bank: '국민은행', number: '789402-94-109845' },
+    { label: '김지영', bank: '우리은행', number: '110-000-000000' },
+  ],
 }
 
 function AccountAccordion({

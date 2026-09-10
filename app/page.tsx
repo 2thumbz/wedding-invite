@@ -58,7 +58,7 @@ export default function Home() {
         </AnimatedSection>
         
         <footer className="text-center py-8 text-gray-500 text-sm">
-          <p>© 2026 우리의 결혼식</p>
+          <p>© Made by Dev.2thumbz</p>
         </footer>
       </div>
     </main>
