@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: '우리의 결혼식에 초대합니다',
-  description: '모바일 청첩장',
+  title: '임태훈 ❤️ 김지영, 12월12일 우리의 결혼식에 초대합니다',
+  description: '12월12일 16:10 광명역 라포에트',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
 }
 
