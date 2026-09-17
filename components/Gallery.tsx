@@ -14,7 +14,7 @@ const FILES = [
   'arkki_1636.jpg', 'arkki_2335.jpg', 'arkki_2391.jpg', 'arkki_2480.jpg',
   'arkki_2996.jpg', 'arkki_3183.jpg', 'arkki_3193.jpg', 'arkki_3233.jpg',
   'arkki_3296.jpg', 'arkki_3545_(2).jpg', 'arkki_3880.jpg', 'arkki_3964_(3).jpg',
-  'arkki_4030.jpg', 'arkki_4053_(2).jpg', 'arkki_4168.jpg', 'arkki_4198.jpg',
+  'arkki_4053_(2).jpg', 'arkki_4168.jpg', 'arkki_4198.jpg',
   'arkki_4458.jpg', 'arkki_4478.jpg', 'arkki_4564.jpg', 'arkki_4627.jpg',
   'arkki_4737.jpg', 'arkki_4928.jpg', 'arkki_4959.jpg', 'arkki_5015.jpg',
   'arkki_5045.jpg', 'arkki_5079.jpg', 'arkki_5226.jpg', 'arkki_5439.jpg',
