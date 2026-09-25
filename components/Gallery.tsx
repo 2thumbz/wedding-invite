@@ -125,7 +125,13 @@ export function Gallery() {
   }
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
-  const modalPointerStart = useRef({ x: 0, y: 0 })
+  const modalSwipeState = useRef({
+    pointerId: null as number | null,
+    startX: 0,
+    startY: 0,
+    hasSwiped: false,
+    isActive: false,
+  })
 
   const showPrevImage = () => {
     setSelectedIndex((prev) => {
@@ -142,23 +148,63 @@ export function Gallery() {
   }
 
   const handleModalPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    modalPointerStart.current = { x: e.clientX, y: e.clientY }
+    modalSwipeState.current.pointerId = e.pointerId
+    modalSwipeState.current.startX = e.clientX
+    modalSwipeState.current.startY = e.clientY
+    modalSwipeState.current.hasSwiped = false
+    modalSwipeState.current.isActive = true
+    e.currentTarget.setPointerCapture(e.pointerId)
   }
 
-  const handleModalPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const dx = e.clientX - modalPointerStart.current.x
-    const dy = e.clientY - modalPointerStart.current.y
+  const handleModalPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!modalSwipeState.current.isActive || modalSwipeState.current.hasSwiped) return
+
+    const dx = e.clientX - modalSwipeState.current.startX
+    const dy = e.clientY - modalSwipeState.current.startY
     const absDx = Math.abs(dx)
     const absDy = Math.abs(dy)
 
-    // 세로 스크롤/탭과 구분하기 위해 수평 이동량이 충분히 큰 경우에만 이미지 전환
-    if (absDx < 50 || absDx <= absDy) return
+    // 드래그 도중 수평 제스처가 명확해지는 즉시 이미지를 전환해 반응성을 높인다.
+    if (absDx < 28 || absDx <= absDy) return
 
+    modalSwipeState.current.hasSwiped = true
     if (dx > 0) {
       showPrevImage()
       return
     }
     showNextImage()
+  }
+
+  const handleModalPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const dx = e.clientX - modalSwipeState.current.startX
+    const dy = e.clientY - modalSwipeState.current.startY
+    const absDx = Math.abs(dx)
+    const absDy = Math.abs(dy)
+
+    // move 단계에서 스와이프 처리가 안 된 빠른 플릭만 up 단계에서 보완 처리
+    if (!modalSwipeState.current.hasSwiped && absDx >= 42 && absDx > absDy) {
+      if (dx > 0) {
+        showPrevImage()
+      } else {
+        showNextImage()
+      }
+    }
+
+    if (modalSwipeState.current.pointerId !== null) {
+      e.currentTarget.releasePointerCapture(modalSwipeState.current.pointerId)
+    }
+    modalSwipeState.current.isActive = false
+    modalSwipeState.current.hasSwiped = false
+    modalSwipeState.current.pointerId = null
+  }
+
+  const handleModalPointerCancel = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (modalSwipeState.current.pointerId !== null) {
+      e.currentTarget.releasePointerCapture(modalSwipeState.current.pointerId)
+    }
+    modalSwipeState.current.isActive = false
+    modalSwipeState.current.hasSwiped = false
+    modalSwipeState.current.pointerId = null
   }
 
   return (
@@ -198,7 +244,9 @@ export function Gallery() {
             className="relative w-full h-full flex items-center justify-center touch-pan-y"
             onClick={(e) => e.stopPropagation()}
             onPointerDown={handleModalPointerDown}
+            onPointerMove={handleModalPointerMove}
             onPointerUp={handleModalPointerUp}
+            onPointerCancel={handleModalPointerCancel}
           >
             <div className="relative w-full h-full max-w-4xl max-h-[90vh]">
               <Image
@@ -207,6 +255,7 @@ export function Gallery() {
                 fill
                 className="object-contain"
                 sizes="100vw"
+                draggable={false}
               />
             </div>
           </div>
