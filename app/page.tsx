@@ -58,7 +58,7 @@ export default function Home() {
         </AnimatedSection>
         
         <footer className="text-center py-8 text-gray-500 text-sm">
-          <p>© Made by Dev.2thumbz</p>
+          <p>© Made by 임태훈</p>
         </footer>
       </div>
     </main>

@@ -6,6 +6,8 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient'
 
 const BUCKET = 'celebration-photos'
 const UPLOADER_TOKEN_KEY = 'photo-uploader-token'
+// KST 2026-12-12 00:00:00
+const PHOTO_UPLOAD_OPEN_AT = Date.UTC(2026, 11, 11, 15, 0, 0)
 
 function getUploaderToken() {
   if (typeof window === 'undefined') return ''
@@ -30,6 +32,7 @@ type PhotoEntry = {
 }
 
 export function PhotoUpload() {
+  const isPhotoUploadVisible = Date.now() >= PHOTO_UPLOAD_OPEN_AT
   const [photos, setPhotos] = useState<PhotoEntry[]>([])
   const [uploaderName, setUploaderName] = useState('')
   const [uploading, setUploading] = useState(false)
@@ -59,10 +62,10 @@ export function PhotoUpload() {
   }
 
   useEffect(() => {
-    if (isSupabaseConfigured) {
+    if (isPhotoUploadVisible && isSupabaseConfigured) {
       fetchPhotos()
     }
-  }, [])
+  }, [isPhotoUploadVisible])
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -123,6 +126,10 @@ export function PhotoUpload() {
     }
   }
 
+
+  if (!isPhotoUploadVisible) {
+    return null
+  }
 
   return (
     <section className="max-w-md mx-auto px-6 py-16">

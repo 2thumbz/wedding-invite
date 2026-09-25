@@ -40,10 +40,12 @@ function GalleryCard({
   src,
   containerRef,
   onOpen,
+  onCardRef,
 }: {
   src: string
   containerRef: React.RefObject<HTMLDivElement>
   onOpen: () => void
+  onCardRef?: (el: HTMLDivElement | null) => void
 }) {
   const cardRef = useRef<HTMLDivElement | null>(null)
   const pointerStart = useRef({ x: 0, y: 0 })
@@ -79,7 +81,10 @@ function GalleryCard({
 
   return (
     <motion.div
-      ref={cardRef}
+      ref={(el) => {
+        cardRef.current = el
+        onCardRef?.(el)
+      }}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       className={`relative shrink-0 rounded-2xl overflow-hidden shadow-lg border border-sky-100 snap-center will-change-transform cursor-pointer transition-[width] duration-300 ${
@@ -111,6 +116,7 @@ export function Gallery() {
   const images = FILES.map((f) => ({ src: `/assets/image/pic/${f}` }))
 
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const cardElementsRef = useRef<(HTMLDivElement | null)[]>([])
 
   // 마우스 드래그로 좌우 스크롤 - 데스크탑 UX 보완 (세로 스크롤은 그대로 페이지 스크롤에 사용)
   const dragState = useRef({ isDown: false, startX: 0, startScroll: 0 })
@@ -166,6 +172,11 @@ export function Gallery() {
   const [isModalDragging, setIsModalDragging] = useState(false)
   const [isPinching, setIsPinching] = useState(false)
 
+  const scrollGalleryToIndex = (index: number, behavior: ScrollBehavior = 'smooth') => {
+    const cardEl = cardElementsRef.current[index]
+    cardEl?.scrollIntoView({ behavior, inline: 'center', block: 'nearest' })
+  }
+
   const getMaxOffset = (scale: number) => {
     const viewport = modalViewportRef.current
     if (!viewport || scale <= 1) return { x: 0, y: 0 }
@@ -195,19 +206,19 @@ export function Gallery() {
   }, [selectedIndex])
 
   const showPrevImage = () => {
+    if (selectedIndex === null) return
+    const nextIndex = selectedIndex > 0 ? selectedIndex - 1 : images.length - 1
     resetModalTransform()
-    setSelectedIndex((prev) => {
-      if (prev === null) return prev
-      return prev > 0 ? prev - 1 : images.length - 1
-    })
+    setSelectedIndex(nextIndex)
+    scrollGalleryToIndex(nextIndex)
   }
 
   const showNextImage = () => {
+    if (selectedIndex === null) return
+    const nextIndex = selectedIndex < images.length - 1 ? selectedIndex + 1 : 0
     resetModalTransform()
-    setSelectedIndex((prev) => {
-      if (prev === null) return prev
-      return prev < images.length - 1 ? prev + 1 : 0
-    })
+    setSelectedIndex(nextIndex)
+    scrollGalleryToIndex(nextIndex)
   }
 
   const handleModalPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -380,7 +391,18 @@ export function Gallery() {
             className="flex gap-6 overflow-x-auto overflow-y-hidden pb-6 px-2 snap-x snap-mandatory scroll-smooth cursor-grab active:cursor-grabbing select-none touch-pan-x [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
           >
             {images.map((item, i) => (
-              <GalleryCard key={i} src={item.src} containerRef={containerRef} onOpen={() => setSelectedIndex(i)} />
+              <GalleryCard
+                key={i}
+                src={item.src}
+                containerRef={containerRef}
+                onCardRef={(el) => {
+                  cardElementsRef.current[i] = el
+                }}
+                onOpen={() => {
+                  setSelectedIndex(i)
+                  scrollGalleryToIndex(i)
+                }}
+              />
             ))}
           </div>
         </div>
