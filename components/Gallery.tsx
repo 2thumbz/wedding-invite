@@ -1,9 +1,13 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import type { PointerEvent as ReactPointerEvent } from 'react'
+import type {
+  PointerEvent as ReactPointerEvent,
+  TouchEvent as ReactTouchEvent,
+  WheelEvent as ReactWheelEvent,
+} from 'react'
 
 const FILES = [
   '4cut1.jpeg', '4cut2.jpeg',
@@ -19,6 +23,17 @@ const FILES = [
   'arkki_4737.jpg', 'arkki_4928.jpg', 'arkki_4959.jpg', 'arkki_5015.jpg',
   'arkki_5045.jpg', 'arkki_5079.jpg', 'arkki_5226.jpg', 'arkki_5439.jpg',
 ]
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
+
+const getTouchDistance = (
+  touchA: { clientX: number; clientY: number },
+  touchB: { clientX: number; clientY: number }
+) => {
+  const dx = touchA.clientX - touchB.clientX
+  const dy = touchA.clientY - touchB.clientY
+  return Math.hypot(dx, dy)
+}
 
 
 function GalleryCard({
@@ -125,6 +140,7 @@ export function Gallery() {
   }
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+  const modalViewportRef = useRef<HTMLDivElement | null>(null)
   const modalSwipeState = useRef({
     pointerId: null as number | null,
     startX: 0,
@@ -132,8 +148,54 @@ export function Gallery() {
     hasSwiped: false,
     isActive: false,
   })
+  const modalTouchState = useRef({
+    isPinching: false,
+    isPanning: false,
+    pinchStartDistance: 0,
+    pinchStartScale: 1,
+    panStartX: 0,
+    panStartY: 0,
+    panStartOffsetX: 0,
+    panStartOffsetY: 0,
+    lastTapAt: 0,
+  })
+
+  const [modalScale, setModalScale] = useState(1)
+  const [modalOffset, setModalOffset] = useState({ x: 0, y: 0 })
+  const [modalDragX, setModalDragX] = useState(0)
+  const [isModalDragging, setIsModalDragging] = useState(false)
+  const [isPinching, setIsPinching] = useState(false)
+
+  const getMaxOffset = (scale: number) => {
+    const viewport = modalViewportRef.current
+    if (!viewport || scale <= 1) return { x: 0, y: 0 }
+    return {
+      x: (viewport.clientWidth * (scale - 1)) / 2,
+      y: (viewport.clientHeight * (scale - 1)) / 2,
+    }
+  }
+
+  const clampOffset = (offset: { x: number; y: number }, scale: number) => {
+    const max = getMaxOffset(scale)
+    return {
+      x: clamp(offset.x, -max.x, max.x),
+      y: clamp(offset.y, -max.y, max.y),
+    }
+  }
+
+  const resetModalTransform = () => {
+    setModalScale(1)
+    setModalOffset({ x: 0, y: 0 })
+    setModalDragX(0)
+  }
+
+  useEffect(() => {
+    if (selectedIndex === null) return
+    resetModalTransform()
+  }, [selectedIndex])
 
   const showPrevImage = () => {
+    resetModalTransform()
     setSelectedIndex((prev) => {
       if (prev === null) return prev
       return prev > 0 ? prev - 1 : images.length - 1
@@ -141,6 +203,7 @@ export function Gallery() {
   }
 
   const showNextImage = () => {
+    resetModalTransform()
     setSelectedIndex((prev) => {
       if (prev === null) return prev
       return prev < images.length - 1 ? prev + 1 : 0
@@ -148,11 +211,13 @@ export function Gallery() {
   }
 
   const handleModalPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (modalScale > 1 || isPinching) return
     modalSwipeState.current.pointerId = e.pointerId
     modalSwipeState.current.startX = e.clientX
     modalSwipeState.current.startY = e.clientY
     modalSwipeState.current.hasSwiped = false
     modalSwipeState.current.isActive = true
+    setIsModalDragging(true)
     e.currentTarget.setPointerCapture(e.pointerId)
   }
 
@@ -163,6 +228,8 @@ export function Gallery() {
     const dy = e.clientY - modalSwipeState.current.startY
     const absDx = Math.abs(dx)
     const absDy = Math.abs(dy)
+
+    setModalDragX(clamp(dx * 0.35, -140, 140))
 
     // 드래그 도중 수평 제스처가 명확해지는 즉시 이미지를 전환해 반응성을 높인다.
     if (absDx < 28 || absDx <= absDy) return
@@ -176,6 +243,8 @@ export function Gallery() {
   }
 
   const handleModalPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!modalSwipeState.current.isActive) return
+
     const dx = e.clientX - modalSwipeState.current.startX
     const dy = e.clientY - modalSwipeState.current.startY
     const absDx = Math.abs(dx)
@@ -188,6 +257,8 @@ export function Gallery() {
       } else {
         showNextImage()
       }
+    } else {
+      setModalDragX(0)
     }
 
     if (modalSwipeState.current.pointerId !== null) {
@@ -196,6 +267,7 @@ export function Gallery() {
     modalSwipeState.current.isActive = false
     modalSwipeState.current.hasSwiped = false
     modalSwipeState.current.pointerId = null
+    setIsModalDragging(false)
   }
 
   const handleModalPointerCancel = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -205,6 +277,92 @@ export function Gallery() {
     modalSwipeState.current.isActive = false
     modalSwipeState.current.hasSwiped = false
     modalSwipeState.current.pointerId = null
+    setIsModalDragging(false)
+    setModalDragX(0)
+  }
+
+  const handleModalTouchStart = (e: ReactTouchEvent<HTMLDivElement>) => {
+    if (e.touches.length === 2) {
+      const distance = getTouchDistance(e.touches[0], e.touches[1])
+      modalTouchState.current.isPinching = true
+      modalTouchState.current.isPanning = false
+      modalTouchState.current.pinchStartDistance = distance
+      modalTouchState.current.pinchStartScale = modalScale
+      setIsPinching(true)
+      setIsModalDragging(false)
+      setModalDragX(0)
+      e.preventDefault()
+      return
+    }
+
+    if (e.touches.length !== 1) return
+
+    const now = Date.now()
+    if (now - modalTouchState.current.lastTapAt < 260) {
+      const nextScale = modalScale > 1 ? 1 : 2
+      setModalScale(nextScale)
+      setModalOffset({ x: 0, y: 0 })
+      setModalDragX(0)
+    }
+    modalTouchState.current.lastTapAt = now
+
+    if (modalScale <= 1) return
+
+    modalTouchState.current.isPanning = true
+    modalTouchState.current.panStartX = e.touches[0].clientX
+    modalTouchState.current.panStartY = e.touches[0].clientY
+    modalTouchState.current.panStartOffsetX = modalOffset.x
+    modalTouchState.current.panStartOffsetY = modalOffset.y
+  }
+
+  const handleModalTouchMove = (e: ReactTouchEvent<HTMLDivElement>) => {
+    if (modalTouchState.current.isPinching && e.touches.length === 2) {
+      const distance = getTouchDistance(e.touches[0], e.touches[1])
+      const ratio = distance / modalTouchState.current.pinchStartDistance
+      const nextScale = clamp(modalTouchState.current.pinchStartScale * ratio, 1, 4)
+      setModalScale(nextScale)
+      setModalOffset((prev) => clampOffset(prev, nextScale))
+      e.preventDefault()
+      return
+    }
+
+    if (!modalTouchState.current.isPanning || e.touches.length !== 1) return
+
+    const dx = e.touches[0].clientX - modalTouchState.current.panStartX
+    const dy = e.touches[0].clientY - modalTouchState.current.panStartY
+    const nextOffset = clampOffset(
+      {
+        x: modalTouchState.current.panStartOffsetX + dx,
+        y: modalTouchState.current.panStartOffsetY + dy,
+      },
+      modalScale
+    )
+    setModalOffset(nextOffset)
+    e.preventDefault()
+  }
+
+  const handleModalTouchEnd = (e: ReactTouchEvent<HTMLDivElement>) => {
+    if (e.touches.length < 2) {
+      modalTouchState.current.isPinching = false
+      setIsPinching(false)
+    }
+    if (e.touches.length === 0) {
+      modalTouchState.current.isPanning = false
+    }
+    if (modalScale <= 1) {
+      setModalOffset({ x: 0, y: 0 })
+    }
+  }
+
+  const handleModalWheel = (e: ReactWheelEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const nextScale = clamp(modalScale - e.deltaY * 0.0015, 1, 4)
+    setModalScale(nextScale)
+    if (nextScale <= 1) {
+      setModalOffset({ x: 0, y: 0 })
+      return
+    }
+    setModalOffset((prev) => clampOffset(prev, nextScale))
   }
 
   return (
@@ -241,14 +399,25 @@ export function Gallery() {
             ✕
           </button>
           <div
-            className="relative w-full h-full flex items-center justify-center touch-pan-y"
+            ref={modalViewportRef}
+            className="relative w-full h-full flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
             onPointerDown={handleModalPointerDown}
             onPointerMove={handleModalPointerMove}
             onPointerUp={handleModalPointerUp}
             onPointerCancel={handleModalPointerCancel}
+            onTouchStart={handleModalTouchStart}
+            onTouchMove={handleModalTouchMove}
+            onTouchEnd={handleModalTouchEnd}
+            onTouchCancel={handleModalTouchEnd}
+            onWheel={handleModalWheel}
+            style={{ touchAction: modalScale > 1 ? 'none' : 'pan-y' }}
           >
-            <div className="relative w-full h-full max-w-4xl max-h-[90vh]">
+            <motion.div
+              className="relative w-full h-full max-w-4xl max-h-[90vh]"
+              animate={{ x: modalOffset.x + modalDragX, y: modalOffset.y, scale: modalScale }}
+              transition={isModalDragging || isPinching ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 28 }}
+            >
               <Image
                 src={images[selectedIndex].src}
                 alt=""
@@ -257,7 +426,7 @@ export function Gallery() {
                 sizes="100vw"
                 draggable={false}
               />
-            </div>
+            </motion.div>
           </div>
         </div>
       )}
