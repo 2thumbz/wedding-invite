@@ -13,7 +13,7 @@ const FILES = [
   'arkki_1171.jpg', 'arkki_1403_(2).jpg', 'arkki_1447.jpg', 'arkki_1627.jpg',
   'arkki_1636.jpg', 'arkki_2335.jpg', 'arkki_2391.jpg', 'arkki_2480.jpg',
   'arkki_2996.jpg', 'arkki_3183.jpg', 'arkki_3193.jpg', 'arkki_3233.jpg',
-  'arkki_3296.jpg', 'arkki_3545_(2).jpg', 'arkki_3880.jpg', 'arkki_3964_(3).jpg',
+  'arkki_3296.jpg', 'arkki_3545_(2).jpg', 'arkki_3880.jpg', 'arkki_3964_(3).jpg', 
   'arkki_4053_(2).jpg', 'arkki_4168.jpg', 'arkki_4198.jpg',
   'arkki_4458.jpg', 'arkki_4478.jpg', 'arkki_4564.jpg', 'arkki_4627.jpg',
   'arkki_4737.jpg', 'arkki_4928.jpg', 'arkki_4959.jpg', 'arkki_5015.jpg',
@@ -28,7 +28,7 @@ function GalleryCard({
 }: {
   src: string
   containerRef: React.RefObject<HTMLDivElement>
-  onOpen: (src: string) => void
+  onOpen: () => void
 }) {
   const cardRef = useRef<HTMLDivElement | null>(null)
   const pointerStart = useRef({ x: 0, y: 0 })
@@ -56,7 +56,7 @@ function GalleryCard({
     const dy = Math.abs(e.clientY - pointerStart.current.y)
     // 드래그가 아닌 탭/클릭으로 판단되는 경우에만 모달 오픈
     if (dx < 8 && dy < 8) {
-      onOpen(src)
+      onOpen()
     }
   }
 
@@ -71,7 +71,7 @@ function GalleryCard({
         isLandscape
           ? 'w-80 sm:w-[26rem] aspect-[4/3]'
           : 'w-64 sm:w-72 aspect-[3/4]'
-      }`}
+      } touch-manipulation`}
       style={{ rotateY, scale, transformStyle: 'preserve-3d' as any }}
     >
       <Image
@@ -101,6 +101,7 @@ export function Gallery() {
   const dragState = useRef({ isDown: false, startX: 0, startScroll: 0 })
 
   const handlePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== 'mouse') return
     const el = containerRef.current
     if (!el) return
     dragState.current.isDown = true
@@ -110,6 +111,7 @@ export function Gallery() {
   }
 
   const handlePointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== 'mouse') return
     const el = containerRef.current
     if (!el || !dragState.current.isDown) return
     const delta = e.clientX - dragState.current.startX
@@ -117,11 +119,47 @@ export function Gallery() {
   }
 
   const handlePointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== 'mouse') return
     dragState.current.isDown = false
     containerRef.current?.releasePointerCapture(e.pointerId)
   }
 
-  const [selected, setSelected] = useState<string | null>(null)
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+  const modalPointerStart = useRef({ x: 0, y: 0 })
+
+  const showPrevImage = () => {
+    setSelectedIndex((prev) => {
+      if (prev === null) return prev
+      return prev > 0 ? prev - 1 : images.length - 1
+    })
+  }
+
+  const showNextImage = () => {
+    setSelectedIndex((prev) => {
+      if (prev === null) return prev
+      return prev < images.length - 1 ? prev + 1 : 0
+    })
+  }
+
+  const handleModalPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    modalPointerStart.current = { x: e.clientX, y: e.clientY }
+  }
+
+  const handleModalPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const dx = e.clientX - modalPointerStart.current.x
+    const dy = e.clientY - modalPointerStart.current.y
+    const absDx = Math.abs(dx)
+    const absDy = Math.abs(dy)
+
+    // 세로 스크롤/탭과 구분하기 위해 수평 이동량이 충분히 큰 경우에만 이미지 전환
+    if (absDx < 50 || absDx <= absDy) return
+
+    if (dx > 0) {
+      showPrevImage()
+      return
+    }
+    showNextImage()
+  }
 
   return (
     <section className="py-12 px-4">
@@ -138,28 +176,33 @@ export function Gallery() {
             className="flex gap-6 overflow-x-auto overflow-y-hidden pb-6 px-2 snap-x snap-mandatory scroll-smooth cursor-grab active:cursor-grabbing select-none touch-pan-x [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
           >
             {images.map((item, i) => (
-              <GalleryCard key={i} src={item.src} containerRef={containerRef} onOpen={setSelected} />
+              <GalleryCard key={i} src={item.src} containerRef={containerRef} onOpen={() => setSelectedIndex(i)} />
             ))}
           </div>
         </div>
       </div>
 
       {/* 풀스크린 모달 */}
-      {selected && (
+      {selectedIndex !== null && (
         <div
           className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setSelected(null)}
+          onClick={() => setSelectedIndex(null)}
         >
           <button
-            onClick={() => setSelected(null)}
+            onClick={() => setSelectedIndex(null)}
             className="absolute top-4 right-4 w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl text-gray-800 hover:bg-gray-200 transition-colors shadow-lg z-10"
           >
             ✕
           </button>
-          <div className="relative w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="relative w-full h-full flex items-center justify-center touch-pan-y"
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={handleModalPointerDown}
+            onPointerUp={handleModalPointerUp}
+          >
             <div className="relative w-full h-full max-w-4xl max-h-[90vh]">
               <Image
-                src={selected}
+                src={images[selectedIndex].src}
                 alt=""
                 fill
                 className="object-contain"
