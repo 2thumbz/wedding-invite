@@ -23,22 +23,26 @@ export function Rsvp() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.from('rsvp').insert({
-      side,
-      name: name.trim(),
-      attendance,
-      count: attendance === 'yes' ? count : 0,
-      message: message.trim() || null,
-    })
+    try {
+      const { error } = await supabase.from('rsvp').insert({
+        side,
+        name: name.trim(),
+        attendance,
+        count: attendance === 'yes' ? count : 0,
+        message: message.trim() || null,
+      })
 
-    setLoading(false)
+      if (error) {
+        setError('전달에 실패했습니다. 잠시 후 다시 시도해주세요.')
+        return
+      }
 
-    if (error) {
-      setError('전달에 실패했습니다. 잠시 후 다시 시도해주세요.')
-      return
+      setSubmitted(true)
+    } catch {
+      setError('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
+    } finally {
+      setLoading(false)
     }
-
-    setSubmitted(true)
   }
 
   if (submitted) {
