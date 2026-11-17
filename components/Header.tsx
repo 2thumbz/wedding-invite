@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
-import { useRsvpModalOpen } from '@/lib/rsvpModalStore'
 
 // 8개 행으로 구성된 출발 안내판 데이터
 // 각 행은 스크램블 되는 후보 문자열들과, 최종적으로 멈추는 값을 가진다
@@ -146,7 +145,6 @@ const ROW_LOCK_DURATION = 2600
 export function Header() {
   const [showPhoto, setShowPhoto] = useState(false)
   const doneCountRef = useRef(0)
-  const isRsvpModalOpen = useRsvpModalOpen()
 
   const handleRowDone = () => {
     doneCountRef.current += 1
@@ -179,7 +177,6 @@ export function Header() {
                     final={row.final}
                     startDelay={ROW_START_DELAY}
                     lockDurationMs={ROW_LOCK_DURATION}
-                    paused={isRsvpModalOpen}
                     onDone={handleRowDone}
                   />
                 ))}
